@@ -1,0 +1,295 @@
+ @import url('https://fonts.googleapis.com/css2?family=Montserrat&display');
+
+.out_text {
+  --padding-top: 2vh;
+  width:100%;
+  margin:4%;
+  text-align:left;
+
+}
+
+.second-out{
+  margin-top: 13.5vh;
+}
+
+
+
+.text-1 {
+    font-size:3.5vmin;
+    font-family: 'Roboto', sans-serif;
+    margin-left: 8.5%;
+    
+}
+
+#payroll,#employees, #last_step {
+    height: 11vh;
+    margin-left: 7%;
+    margin-top: 1%;
+    line-height: 11vh;
+    vertical-align: middle;
+    font-size:5.4vh;
+    padding: 3.5%;
+    text-align:left;
+    border-left:1.1vmin solid #2a3a6e;
+    --background-color: #db974340;
+    font-family: "Lucida Console", Monospace;
+    --border-radius: 7vh;
+}
+
+.grid-buttons{
+  display:flex;
+  margin-right:5vw;
+  font-size:1.7vmin;
+  width: 100%;
+}
+
+#steps, #lanes{
+  font-size: 2.4vmin;
+  height:5.5vh;
+}
+
+#sal_template, #fte_template {
+  background-color: gray;
+}
+
+ #down_summ, #down_det, #down_det_img, #down_summ_img, #down_chart, #down_heatmap, #submit_pass, #down_break, #down_break_img,  #down_summ5, #down_det5, #down_det_img5, #down_summ_img5, #down_chart5, #down_heatmap5, #submit_pass5, #down_break5, #down_break_img5 {
+   background-color: #2a3a6e;
+ }
+ 
+ #down_years_a, #save,  #down_years_a5 {
+   background-color: #DB9743;
+ }
+ 
+#down_years_b, #down_years_b5, .btn-file{
+    background-color: #2a3a6e;
+  }
+  
+#down_years_c,#down_years_c5{
+    background-color: gray;
+  }
+
+
+#cola1_b ,  #cola2_b , #cola3_b, #cola1_b5 ,  #cola2_b5 , #cola3_b5, #cola4_b5 , #cola5_b5  {
+ border-color: #2a3a6e;
+ border-style: solid;
+  border-width: 6px;
+  border-radius: 25px;
+  padding: 6px;
+}
+
+#cola1_a ,  #cola2_a , #cola3_a, #cola1_a5 ,  #cola2_a5 , #cola3_a5, #cola4_a5 , #cola5_a5 {
+ border-color: #DB9743;
+ border-style: solid;
+  border-width: 6px;
+  border-radius: 25px;
+  padding: 6px;
+}
+
+#stipends, #lane_change,#stipends5, #lane_change5   {
+ border-color: gray;
+ border-style: solid;
+  border-width: 6px;
+  border-radius: 25px;
+  padding: 6px;
+  background-color: #f5f3e9;
+}
+
+#cola1_c ,  #cola2_c , #cola3_c, #cola1_c5 ,  #cola2_c5 , #cola3_c5, #cola4_c5 , #cola5_c5 {
+ border-color: gray;
+ border-style: solid;
+   border-width: 6px;
+  border-radius: 25px;
+  padding: 6px;
+}
+
+
+input {
+  color:black;
+}
+
+.inter-button{
+  width:20%;
+  padding:15px;
+}
+
+.other-button{
+  width:16%;
+  padding:10px;
+  margin-top: 5px;
+}
+
+.template-container{
+  width: 15vw;
+}
+
+.line-download{
+  padding:5px;
+  margin-top:25px;
+}
+
+.titles{
+  font-size: 2.1vmin;
+  font-weight:700;
+}
+
+.card-button {
+  margin-top: 10px;
+  padding:5px;
+  position:absolute;
+  right:2%;
+  
+}
+
+.card-button2 {
+  padding:5px;
+  position:absolute;
+  right:20%;
+  top:0;
+
+}
+
+.map-table{
+  width:50%;
+}
+
+
+.input-stepper{
+
+  padding: 10px;
+  font-size: 2.5vmin;
+  display: flex;
+  text-align: center;
+}
+
+.stepper-input {
+   font-size: 1.5em;
+   text-align: center;
+   justify-content: center;
+   align-items: center;
+   margin: 0 auto;
+  display:grid;
+  place-items: center;
+  width:40%;
+}
+
+.stepper-fifty{
+  font-size: 1.3em;
+   justify-content: center;
+   text-align: center;
+   align-items: center;
+   margin: 0 auto;
+   margin-bottom: 15px;
+  display:grid;
+  place-items: center;
+  width:40%;
+}
+  
+.input-box {
+   text-align: center;
+   width:100%;
+}
+
+.save-button .tooltiptext {
+  visibility: hidden;
+  width: 100%;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -50%; /* Use half of the width (120/2 = 60), to center the tooltip */
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  padding: 10px 0;
+  margin-top: 5px;
+  border-radius: 6px;
+ 
+  /* Position the tooltip text - see examples below! */
+  position: absolute;
+  z-index: 1;
+}
+
+.save-button:hover .tooltiptext {
+  visibility: visible;
+}
+
+.save-button .tooltiptext::after {
+  content: " ";
+  position: absolute;
+  top: 100%; /* At the bottom of the tooltip */
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: black transparent transparent transparent;
+}
+
+.save-button .tooltiptext {
+  opacity: 0;
+  transition: opacity 1s;
+}
+
+.save-button:hover .tooltiptext {
+  opacity: 1;
+}
+
+.top-district-logo{
+  position:absolute;
+  right:10px;
+  top:7px;
+
+}
+
+.dis-name{
+  margin:auto;
+  margin-right: 10px;
+  font-size: 2vmin;
+  font-weight: 500;
+  font-family: 'Montserrat', sans-serif;
+  text-align: center;
+}
+
+#down_heatmap {
+  width:18%;
+  margin-left: 9px;
+}
+
+input::placeholder {
+  font-size: 0.4em;
+}
+
+.form-control::placeholder {
+  font-size: 1.1em;
+}
+
+.pass-button {
+  padding-top: 10px;
+  margin-right: 45px;
+  
+  
+}
+
+#pass {
+  color:gray;
+  text-decoration: underline dotted;
+  float:right;
+}
+
+.pass-title{
+  text-align: center;
+}
+
+.extra-text{
+  margin-top: 120px;
+  padding-left: 20px;
+  font-size: 1.6vmin;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.small-text{
+  font-size: 1.1vmin;
+  padding-left: 20px;
+  color: #2a3a6e;
+  font-family: 'Montserrat', sans-serif;
+}
+
+
+
