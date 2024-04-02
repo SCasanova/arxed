@@ -118,7 +118,7 @@ ui <- shinyMobile::f7Page(
   #    overlayOpacity = 0.4,
   #    refreshColour = "grey"
   #  ), 
-  title = paste0("  LITIX | Analytics Salary Projections"),  
+  title = paste0("  LITIX Budget Forecasting"),  
   options = list(dark = F),
   tags$script(src = "myscript.js"),
   shinyMobile::f7SingleLayout(
@@ -133,7 +133,7 @@ ui <- shinyMobile::f7Page(
         tags$img(src='https://raw.githubusercontent.com/SCasanova/arxed/main/arxed%20logos/LITIX%20PNG/LITIX%20TM%20Secondary%20Logo%20-%20Transparent%20BG.png',
                  width='45px'),
         width='45px'),
-      tags$span(h3(paste0("  LITIX | Analytics Salary Projections")), 
+      tags$span(h3(paste0("  LITIX Budget Forecasting")), 
                 style = 'text-align:center;'), 
       tags$div(htmlOutput('logo_src'), class = 'top-district-logo')),
     tags$div(shinyMobile::f7Fab(
@@ -1853,7 +1853,7 @@ output$custom_title <- renderUI(
                      decimals = 1,
                      patter = '{x}%') %>%
       gt::tab_source_note(
-        source_note = gt::html(paste0(tags$span(style = "font-size:17px;" , tags$span(tags$img(src='https://raw.githubusercontent.com/SCasanova/arxed/main/arxed%20logos/LITIX%20PNG/LITIX%20TM%20Main%20Logo%20-%20Transparent%20BG.png',width='50px', style = 'margin-right:3px;margin-bottom:-3px;')), "LITIX | Analytics", ' Forecasting')))
+        source_note = gt::html(paste0(tags$span(style = "font-size:17px;" , tags$span(tags$img(src='https://raw.githubusercontent.com/SCasanova/arxed/main/arxed%20logos/LITIX%20PNG/LITIX%20TM%20Main%20Logo%20-%20Transparent%20BG.png',width='50px', style = 'margin-right:3px;margin-bottom:-3px;')), "LITIX", 'Budget Forecasting')))
       ) %>%
       # gt::tab_source_note(
       #     source_note = gt::html(paste0(shinyMobile::f7Link(href = 'https://www.arxed.com/', label = 'Visit Our Website')))
@@ -1936,7 +1936,7 @@ output$custom_title <- renderUI(
                      decimals = 2,
                      patter = '{x}%') %>%
       gt::tab_source_note(
-        source_note = gt::html(paste0(tags$span(style = "font-size:17px;" , tags$span(tags$img(src='https://raw.githubusercontent.com/SCasanova/arxed/main/arxed%20logos/LITIX%20PNG/LITIX%20TM%20Main%20Logo%20-%20Transparent%20BG.png',width='50px', style = 'margin-right:3px;margin-bottom:-3px;')), "LITIX | Analytics", ' Forecasting')))
+        source_note = gt::html(paste0(tags$span(style = "font-size:17px;" , tags$span(tags$img(src='https://raw.githubusercontent.com/SCasanova/arxed/main/arxed%20logos/LITIX%20PNG/LITIX%20TM%20Main%20Logo%20-%20Transparent%20BG.png',width='50px', style = 'margin-right:3px;margin-bottom:-3px;')), "LITIX", 'Budget Forecasting')))
       ) %>%
       gt::cols_label(
         cola_year_1 = "COLA",
@@ -1999,7 +1999,7 @@ output$custom_title <- renderUI(
                      decimals = 1,
                      patter = '{x}%') %>%
       gt::tab_source_note(
-        source_note = gt::html(paste0(tags$span(style = "font-size:17px;" , tags$span(tags$img(src='https://raw.githubusercontent.com/SCasanova/arxed/main/arxed%20logos/LITIX%20PNG/LITIX%20TM%20Main%20Logo%20-%20Transparent%20BG.png',width='50px', style = 'margin-right:3px;margin-bottom:-3px;')), "LITIX | Analytics", ' Forecasting')))
+        source_note = gt::html(paste0(tags$span(style = "font-size:17px;" , tags$span(tags$img(src='https://raw.githubusercontent.com/SCasanova/arxed/main/arxed%20logos/LITIX%20PNG/LITIX%20TM%20Main%20Logo%20-%20Transparent%20BG.png',width='50px', style = 'margin-right:3px;margin-bottom:-3px;')), "LITIX", 'Budget Forecasting')))
       ) %>%
       gt::cols_width(
         dplyr::everything() ~ gt::pct(20)
@@ -2811,7 +2811,7 @@ output$custom_title <- renderUI(
                      decimals = 1,
                      patter = '{x}%') %>%
       gt::tab_source_note(
-        source_note = gt::html(paste0(tags$span(style = "font-size:17px;" , tags$span(tags$img(src='https://raw.githubusercontent.com/SCasanova/arxed/main/arxed%20logos/LITIX%20PNG/LITIX%20TM%20Main%20Logo%20-%20Transparent%20BG.png',width='50px', style = 'margin-right:3px;margin-bottom:-3px;')), "LITIX | Analytics", ' Forecasting')))
+        source_note = gt::html(paste0(tags$span(style = "font-size:17px;" , tags$span(tags$img(src='https://raw.githubusercontent.com/SCasanova/arxed/main/arxed%20logos/LITIX%20PNG/LITIX%20TM%20Main%20Logo%20-%20Transparent%20BG.png',width='50px', style = 'margin-right:3px;margin-bottom:-3px;')), "LITIX", 'Budget Forecasting')))
       ) %>%
       # gt::tab_source_note(
       #     source_note = gt::html(paste0(shinyMobile::f7Link(href = 'https://www.arxed.com/', label = 'Visit Our Website')))
@@ -2923,7 +2923,7 @@ output$custom_title <- renderUI(
         decimals = 2,
         patter = '{x}%') %>% 
       gt::tab_source_note(
-        source_note = gt::html(paste0(tags$span(style = "font-size:17px;" , tags$span(tags$img(src='https://raw.githubusercontent.com/SCasanova/arxed/main/arxed%20logos/LITIX%20PNG/LITIX%20TM%20Main%20Logo%20-%20Transparent%20BG.png',width='50px', style = 'margin-right:3px;margin-bottom:-3px;')), "LITIX | Analytics", ' Forecasting')))
+        source_note = gt::html(paste0(tags$span(style = "font-size:17px;" , tags$span(tags$img(src='https://raw.githubusercontent.com/SCasanova/arxed/main/arxed%20logos/LITIX%20PNG/LITIX%20TM%20Main%20Logo%20-%20Transparent%20BG.png',width='50px', style = 'margin-right:3px;margin-bottom:-3px;')), "LITIX", 'Budget Forecasting')))
       ) %>%
       gt::cols_label(
         cola_year_1 = "COLA",
@@ -2999,7 +2999,7 @@ output$custom_title <- renderUI(
                      decimals = 1,
                      patter = '{x}%') %>%
       gt::tab_source_note(
-        source_note = gt::html(paste0(tags$span(style = "font-size:17px;" , tags$span(tags$img(src='https://raw.githubusercontent.com/SCasanova/arxed/main/arxed%20logos/LITIX%20PNG/LITIX%20TM%20Main%20Logo%20-%20Transparent%20BG.png',width='50px', style = 'margin-right:3px;margin-bottom:-3px;')), "LITIX | Analytics", ' Forecasting')))
+        source_note = gt::html(paste0(tags$span(style = "font-size:17px;" , tags$span(tags$img(src='https://raw.githubusercontent.com/SCasanova/arxed/main/arxed%20logos/LITIX%20PNG/LITIX%20TM%20Main%20Logo%20-%20Transparent%20BG.png',width='50px', style = 'margin-right:3px;margin-bottom:-3px;')), "LITIX", 'Budget Forecasting')))
       ) %>%
       gt::cols_width(
         dplyr::everything() ~ gt::pct(20)
