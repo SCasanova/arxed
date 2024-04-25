@@ -2188,7 +2188,7 @@ output$custom_title <- renderUI(
   })
   
   year_2_total_a5 <- reactive({
-    get_total_salary(scales_a_year2())
+    get_total_salary(scales_a_year2_5())
   })
   
   scales_a_year3_5 <- reactive({
@@ -2274,7 +2274,7 @@ output$custom_title <- renderUI(
   })
   
   year_2_total_c5 <- reactive({
-    get_total_salary(scales_c_year2())
+    get_total_salary(scales_c_year2_5())
   })
   
   scales_c_year3_5 <- reactive({
