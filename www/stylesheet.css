@@ -30,8 +30,8 @@
     font-size:5.4vh;
     padding: 3.5%;
     text-align:left;
-    border-left:1.1vmin solid #2a3a6e;
-    --background-color: #db974340;
+    border-left:1.1vmin solid #4E0F53;
+    --background-color: #DC954240;
     font-family: "Lucida Console", Monospace;
     --border-radius: 7vh;
 }
@@ -53,15 +53,15 @@
 }
 
  #down_summ, #down_det, #down_det_img, #down_summ_img, #down_chart, #down_heatmap, #submit_pass, #down_break, #down_break_img,  #down_summ5, #down_det5, #down_det_img5, #down_summ_img5, #down_chart5, #down_heatmap5, #submit_pass5, #down_break5, #down_break_img5 {
-   background-color: #2a3a6e;
+   background-color: #4E0F53;
  }
  
  #down_years_a, #save,  #down_years_a5 {
-   background-color: #DB9743;
+   background-color: #DC9542;
  }
  
 #down_years_b, #down_years_b5, .btn-file{
-    background-color: #2a3a6e;
+    background-color: #4E0F53;
   }
   
 #down_years_c,#down_years_c5{
@@ -70,7 +70,7 @@
 
 
 #cola1_b ,  #cola2_b , #cola3_b, #cola1_b5 ,  #cola2_b5 , #cola3_b5, #cola4_b5 , #cola5_b5  {
- border-color: #2a3a6e;
+ border-color: #4E0F53;
  border-style: solid;
   border-width: 6px;
   border-radius: 25px;
@@ -78,7 +78,7 @@
 }
 
 #cola1_a ,  #cola2_a , #cola3_a, #cola1_a5 ,  #cola2_a5 , #cola3_a5, #cola4_a5 , #cola5_a5 {
- border-color: #DB9743;
+ border-color: #DC9542;
  border-style: solid;
   border-width: 6px;
   border-radius: 25px;
@@ -287,7 +287,7 @@ input::placeholder {
 .small-text{
   font-size: 1.1vmin;
   padding-left: 20px;
-  color: #2a3a6e;
+  color: #4E0F53;
   font-family: 'Montserrat', sans-serif;
 }
 

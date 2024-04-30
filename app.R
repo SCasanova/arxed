@@ -109,7 +109,7 @@ ui <- shinyMobile::f7Page(
   # shinydisconnect::disconnectMessage(
   #    text = "Your session has timed out.",
   #    refresh = "Reload now",
-  #    background = "#2a3a6e",
+  #    background = "#4E0F53",
   #    size = 36,
   #    width = "full",
   #    top = "center",
@@ -336,7 +336,7 @@ ui <- shinyMobile::f7Page(
           intensity = 16,
           hover = T,
           shinyMobile::f7Card(
-            tags$div(tags$div(h2("Option A"), style = "width:25%;text-align:left;color:#DB9743;"),
+            tags$div(tags$div(h2("Option A"), style = "width:25%;text-align:left;color:#DC9542;"),
                      tags$div(
                        tags$small(h3("COLA% Year 1")),
                        tags$div(class="stepper-input",
@@ -398,7 +398,7 @@ ui <- shinyMobile::f7Page(
           intensity = 16,
           hover = T,
           shinyMobile::f7Card(
-            tags$div(tags$div(h2("Option B"), style = "width:25%;text-align:left;color:#2a3a6e;"),
+            tags$div(tags$div(h2("Option B"), style = "width:25%;text-align:left;color:#4E0F53;"),
                      tags$div(
                        tags$small(h3("COLA% Year 1")),
                        tags$div(class="stepper-input",
@@ -596,7 +596,7 @@ ui <- shinyMobile::f7Page(
           intensity = 16,
           hover = T,
           shinyMobile::f7Card(
-            tags$div(tags$div(h2("Option A"), style = "width:16.6%;text-align:left;color:#DB9743;"),
+            tags$div(tags$div(h2("Option A"), style = "width:16.6%;text-align:left;color:#DC9542;"),
                      tags$div(
                        tags$small(h3("COLA% Year 1")),
                        tags$div(class="stepper-input",
@@ -690,7 +690,7 @@ ui <- shinyMobile::f7Page(
           intensity = 16,
           hover = T,
           shinyMobile::f7Card(
-            tags$div(tags$div(h2("Option B"), style = "width:16.6%;text-align:left;color:#2a3a6e;"),
+            tags$div(tags$div(h2("Option B"), style = "width:16.6%;text-align:left;color:#4E0F53;"),
                      tags$div(
                        tags$small(h3("COLA% Year 1")),
                        tags$div(class="stepper-input",
@@ -1474,7 +1474,7 @@ output$custom_title <- renderUI(
       y = ~ op_a,
       type = 'bar',
       name = 'Option A',
-      marker = list(color = '#DB9743'),
+      marker = list(color = '#DC9542'),
       hovertemplate = 'Salaries: %{y:$,.0f}<extra></extra>',
       texttemplate = '$%{y:.3s}',
       textposition = 'inside',
@@ -1482,7 +1482,7 @@ output$custom_title <- renderUI(
     ) %>%
       plotly::add_trace(y = ~ op_b,
                         name = 'Option B',
-                        marker = list(color = '#2a3a6e')) %>%
+                        marker = list(color = '#4E0F53')) %>%
       plotly::add_trace(y = ~ op_c,
                         name = 'Option C',
                         marker = list(color = 'grey')) %>%
@@ -1827,13 +1827,13 @@ output$custom_title <- renderUI(
       ) %>%
       gt::tab_style(
         style = list(
-          gt::cell_text(weight = "600", color = '#DB9743')
+          gt::cell_text(weight = "600", color = '#DC9542')
         ),
         locations = gt::cells_body(rows = 1)
       ) %>%
       gt::tab_style(
         style = list(
-          gt::cell_text(weight = "600", color = '#2a3a6e')
+          gt::cell_text(weight = "600", color = '#4E0F53')
         ),
         locations = gt::cells_body(rows = 2)
       ) %>%
@@ -1907,13 +1907,13 @@ output$custom_title <- renderUI(
       ) %>%
       gt::tab_style(
         style = list(
-          gt::cell_text(weight = "600", color = '#DB9743')
+          gt::cell_text(weight = "600", color = '#DC9542')
         ),
         locations = gt::cells_body(rows = 1)
       ) %>%
       gt::tab_style(
         style = list(
-          gt::cell_text(weight = "600", color = '#2a3a6e')
+          gt::cell_text(weight = "600", color = '#4E0F53')
         ),
         locations = gt::cells_body(rows = 2)
       ) %>%
@@ -1973,13 +1973,13 @@ output$custom_title <- renderUI(
       ) %>%
       gt::tab_style(
         style = list(
-          gt::cell_text(weight = "600", color = '#DB9743')
+          gt::cell_text(weight = "600", color = '#DC9542')
         ),
         locations = gt::cells_body(rows = 1)
       ) %>%
       gt::tab_style(
         style = list(
-          gt::cell_text(weight = "600", color = '#2a3a6e')
+          gt::cell_text(weight = "600", color = '#4E0F53')
         ),
         locations = gt::cells_body(rows = 2)
       ) %>%
@@ -2340,7 +2340,7 @@ output$custom_title <- renderUI(
       y = ~ op_a,
       type = 'bar',
       name = 'Option A',
-      marker = list(color = '#DB9743'),
+      marker = list(color = '#DC9542'),
       hovertemplate = 'Salaries: %{y:$,.0f}<extra></extra>',
       texttemplate = '$%{y:.3s}',
       textposition = 'inside',
@@ -2348,7 +2348,7 @@ output$custom_title <- renderUI(
     ) %>%
       plotly::add_trace(y = ~ op_b,
                         name = 'Option B',
-                        marker = list(color = '#2a3a6e')) %>%
+                        marker = list(color = '#4E0F53')) %>%
       plotly::add_trace(y = ~ op_c,
                         name = 'Option C',
                         marker = list(color = 'grey')) %>%
@@ -2785,13 +2785,13 @@ output$custom_title <- renderUI(
       ) %>%
       gt::tab_style(
         style = list(
-          gt::cell_text(weight = "600", color = '#DB9743')
+          gt::cell_text(weight = "600", color = '#DC9542')
         ),
         locations = gt::cells_body(rows = 1)
       ) %>%
       gt::tab_style(
         style = list(
-          gt::cell_text(weight = "600", color = '#2a3a6e')
+          gt::cell_text(weight = "600", color = '#4E0F53')
         ),
         locations = gt::cells_body(rows = 2)
       ) %>%
@@ -2873,13 +2873,13 @@ output$custom_title <- renderUI(
       ) %>%
       gt::tab_style(
         style = list(
-          gt::cell_text(weight = "600", color = '#DB9743')
+          gt::cell_text(weight = "600", color = '#DC9542')
         ),
         locations = gt::cells_body(rows = 1)
       ) %>%
       gt::tab_style(
         style = list(
-          gt::cell_text(weight = "600", color = '#2a3a6e')
+          gt::cell_text(weight = "600", color = '#4E0F53')
         ),
         locations = gt::cells_body(rows = 2)
       ) %>%
@@ -2973,13 +2973,13 @@ output$custom_title <- renderUI(
       ) %>%
       gt::tab_style(
         style = list(
-          gt::cell_text(weight = "600", color = '#DB9743')
+          gt::cell_text(weight = "600", color = '#DC9542')
         ),
         locations = gt::cells_body(rows = 1)
       ) %>%
       gt::tab_style(
         style = list(
-          gt::cell_text(weight = "600", color = '#2a3a6e')
+          gt::cell_text(weight = "600", color = '#4E0F53')
         ),
         locations = gt::cells_body(rows = 2)
       ) %>%
