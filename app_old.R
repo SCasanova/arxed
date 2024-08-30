@@ -4,77 +4,24 @@
 
 library(magrittr)
 library(shiny)
-options(encoding = "UTF-8", shiny.sanitize.errors = TRUE)
-
-
-warehouse <- config::get('dataconnection')
-
-
-con_string <- glue::glue(
-  "Driver={driver};
-  Server={server};
-  Database={db};
-  Uid={user};
-  Pwd={pass};
-  Encrypt=yes;
-  TrustServerCertificate=no;",
-  driver = warehouse$driver,
-  server = warehouse$server,
-  db = warehouse$database,
-  user = warehouse$uid,
-  pass = warehouse$pwd
-)
-
-
-        
+options(encoding = "UTF-8")
 
 
 # Connect to database -----------------------------------------------
 
-sqlQuery <- function (query, db) {
-  # creating DB connection object with DBI package
-  
-  # DB <- DBI::dbConnect(drv = odbc::odbc(),
-  #                      Driver = sqlDriver,
-  #                      server = sqlServer,
-  #                      database = sqlDatabase,
-  #                      uid = sqlUser,
-  #                      pwd = sqlPassword)
-  
-  DB <-
-    DBI::dbConnect(odbc::odbc(),
-              .connection_string = 
-               con_string,
-              timeout = 10)
-  
-  # send Query to obtain result set
-  rs <- odbc::dbSendQuery(DB, query)
-  # rs <- RMySQL::dbSendQuery(DB, query)
+sqlQuery <- function (query,db) {
+  # creating DB connection object with RMysql package
+  DB <- DBI::dbConnect(RMySQL::MySQL(), dbname = db, user = 'admin', password = 'ArxEd01742!',
+                       host = 'arxed-sal.cnlnwcegporn.us-east-1.rds.amazonaws.com', 
+                       port = 8209)
+  # close db connection after function call exits
+  on.exit(DBI::dbDisconnect(DB))
+  # send Query to btain result set
+  rs <- RMySQL::dbSendQuery(DB, query)
   # get elements from result sets and convert to dataframe
-  result <- odbc::dbFetch(rs) %>%
-    tibble::tibble()
+  result <- RMySQL::fetch(rs, -1)
   # return the dataframe
   result
-}
-
-
-
-sqlAppend <- function(data, dbTable){
-  
-  # DB <- DBI::dbConnect(drv = odbc::odbc(),
-  #                      Driver = sqlDriver,
-  #                      server = sqlServer,
-  #                      database = sqlDatabase,
-  #                      uid = sqlUser,
-  #                      pwd = sqlPassword)
-  
-  DB <-
-    DBI::dbConnect(odbc::odbc(),
-              .connection_string = 
-                con_string,
-              timeout = 10)
-  
-  DBI::dbAppendTable(DB, dbTable, data)
 }
 
 
@@ -130,32 +77,25 @@ spec_rename <- function(x){ #Renaming function
 # Credential system for persistent data ---------------------------------------------
 
 
-check_creds <- function(sqlServer, sqlDatabase, sqlUser, sqlPassword) {
+check_creds <- function(dbname, host, port, db_user, db_password) {
   
   function(user, password) {
     
-    # con <- DBI::dbConnect(drv = odbc::odbc(),
-    #                      Driver = sqlDriver,
-    #                      server = sqlServer,
-    #                      database = sqlDatabase,
-    #                      uid = sqlUser,
-    #                      pwd = sqlPassword)
+    con <- DBI::dbConnect(RMySQL::MySQL(), 
+                          dbname = dbname, 
+                          user = db_user, 
+                          password = db_password,
+                          host = host, 
+                          port = port)
     
-    con <-
-      DBI::dbConnect(odbc::odbc(),
-                .connection_string = 
-                  con_string,
-                timeout = 10)
+    on.exit(DBI::dbDisconnect(con))
     
-    query <-  glue::glue("SELECT *
-          FROM sec.users
-          WHERE [user] = '{user}'
-          AND ([password] = '{password}' or [password] is null);") 
     
-    rs <- odbc::dbSendQuery(con,  query)
-    
-    res <- odbc::dbFetch(rs)
-    
+    res <- DBI::fetch(DBI::dbSendQuery(con, glue::glue_sql("SELECT * 
+                            FROM userlist 
+                            WHERE user = {user} 
+                            AND password = {password}
+                            ", user = user, password = password, .con = con)))
     
     if (nrow(res) > 0) {
       list(result = TRUE, user_info = list(user = user, something = 123))
@@ -1027,7 +967,11 @@ server <- function(input, output, session) {
   
   res_auth <- shinymanager::secure_server(
     check_credentials = check_creds(
-      sqlServer, sqlDatabase, sqlUser, sqlPassword
+      dbname = "users",
+      host = "arxed-sal.cnlnwcegporn.us-east-1.rds.amazonaws.com",
+      port = 8209,
+      db_user = "admin",
+      db_password = "ArxEd01742!"
     )
   )
   
@@ -1041,47 +985,40 @@ server <- function(input, output, session) {
   })
   
   
+
+# Description -------------------------------------------------------------
+
+language <- reactive({
+  if(stringr::str_detect(active_user() %>% tolower(), '/paras')){
+    'Paraprofessional'
+  } else if(stringr::str_detect(active_user() %>% tolower(), '/nurses')){
+    'Nurse'
+  } else if(stringr::str_detect(active_user() %>% tolower(), '/admin')){
+    'Administrator'
+  } else if(stringr::str_detect(active_user() %>% tolower(), '/gened')){
+    'Gen Ed'
+  } else if(stringr::str_detect(active_user() %>% tolower(), '/speced')){
+    'Spec Ed'
+  } else {
+    'Teacher'
+  }
+})  
   
-  # Description -------------------------------------------------------------
-  
-  language <- reactive({
-    if(stringr::str_detect(active_user() %>% tolower(), '/paras')){
-      'Paraprofessional'
-    } else if(stringr::str_detect(active_user() %>% tolower(), '/nurses')){
-      'Nurse'
-    } else if(stringr::str_detect(active_user() %>% tolower(), '/admin')){
-      'Administrator'
-    } else if(stringr::str_detect(active_user() %>% tolower(), '/gened')){
-      'Gen Ed'
-    } else if(stringr::str_detect(active_user() %>% tolower(), '/speced')){
-      'Spec Ed'
-    } else {
-      'Teacher'
-    }
-  })  
-  
-  output$custom_title <- renderUI(
-    tags$div(class = 'text-1',
-             glue::glue("Current {language()} Salaries:"))
-  )
+output$custom_title <- renderUI(
+  tags$div(class = 'text-1',
+           glue::glue("Current {language()} Salaries:"))
+)
   
   
   # Log user login ----------------------------------------------------------
   
   login_time <- reactive({
     req(active_user())
-    query <-
-      glue::glue(
-        "UPDATE sec.users 
-        SET logins =  (
-          SELECT logins 
-          FROM sec.users
-          WHERE [user] = '{user}'
-          ) +1
-        WHERE [user] = '{user}';",
-        user = active_user(),
-      )
-    sqlQuery(query)
+    query <- glue::glue("UPDATE userlist SET last_login = '{time}' WHERE user = '{user}';
+                         ", 
+                        user = active_user(), 
+                        time = strftime(as.POSIXlt(Sys.time(), tz = "EST"), '%F %T', usetz = TRUE))
+    sqlQuery(query, 'users')
   })
   
   
@@ -1103,14 +1040,11 @@ server <- function(input, output, session) {
   observeEvent(input$submit_pass, {
     if(input$newPassConf == input$newPass){
       
-      query <- glue::glue(
-        "UPDATE sec.users
-        SET [password] = '{password}'
-        WHERE [user] = '{user}';",
-        user = active_user(), 
-        password = input$newPass)
-     
-       sqlQuery(query)
+      query <- glue::glue("UPDATE userlist
+                               SET password = '{password}'
+                               WHERE user = '{user}';
+                               ", user = active_user(), password = input$newPass)
+      sqlQuery(query, 'users')
       
       shinyMobile::f7Notif(
         text = "Your password has succesfully changed",
@@ -1138,30 +1072,21 @@ server <- function(input, output, session) {
   #get associated district logo and name
   
   logo <- reactive({ #access district table to get name and logo associated with user
-    query <- glue::glue(
-      "SELECT logo
-      FROM district.district_info
-      WHERE nces_id = (SELECT nces_id
-      FROM district.user_district
-      WHERE [user] = '{user}');",
-      user = active_user()
-    )
+    query <- paste0("SELECT logo
+                      FROM district_user
+                      WHERE user =", "'",  active_user(), "';") 
     
-    sqlQuery(query)
+    sqlQuery(query, 'districts')%>%
+      unique() %>% 
+      as.character()
   })
   
   district_name <- reactive({
     
-    query <- glue::glue_sql(
-      "SELECT name
-      FROM district.district_info
-      WHERE nces_id = (SELECT nces_id
-      FROM district.user_district
-      WHERE [user] ='{user}');",
-      user = active_user()
-    ) 
-    
-    sqlQuery(query) %>% 
+    query <- paste0("SELECT district_name 
+                      FROM district_user 
+                      WHERE user =", "'",  active_user(),"';")
+    sqlQuery(query,'districts') %>% 
       unique()
     
   })
@@ -1222,13 +1147,12 @@ server <- function(input, output, session) {
   
   test_server <- reactive({
     req(active_user())
-    query <- glue::glue(
-      "SELECT *
-      FROM salary.user_scales
-      WHERE [user] = '{active}';", 
-      active = active_user())
+    query <- glue::glue("SELECT * 
+                    FROM user_scales 
+                    WHERE user = '{active}';",
+                    active = active_user())
     
-    dim(sqlQuery(query))
+    dim(sqlQuery(query, 'salary'))
   })
   
   
@@ -1256,53 +1180,53 @@ server <- function(input, output, session) {
   uploaded_scales <- reactive({
     expand_grids(salary_upload(), fte_upload(), active_user())
   })
-  
+
   
   active_scales <- reactive({
     if(!purrr::is_empty(fte_in()[1]) & !purrr::is_empty(salary_in()[1])){
       uploaded_scales()
     } else if(!purrr::is_empty(test_server()[1] != 0)){
-      query <- glue::glue(
-        "SELECT * 
-        FROM salary.user_scales 
-        WHERE [user] = '{active}';",
-        active = active_user())
+      query <- glue::glue("SELECT * 
+                    FROM user_scales 
+                    WHERE user = '{active}';",
+                          active = active_user())
       
-      sqlQuery(query)
+      sqlQuery(query, 'salary')%>%
+        tibble::tibble()
     }
   })
   
   
   #Process the table data to get yearly payroll (raw number and formatted)
-  
+
   payroll_raw <- reactive({
     req(active_scales())
     temp <- active_scales() %>%
       dplyr::mutate(pay = salary*fte)
     sum(temp$pay)
-    
+
   })
-  
+
   payroll <- reactive({
     req(active_scales())
     paste0('$', formatC(payroll_raw(),  format="f", digits=0, big.mark=","))
-    
+
   })
   
   output$payroll <- renderText(
     payroll()
   )
-  
+
   total_fte <- reactive({
     req(active_scales())
     sum(active_scales()$fte)
-    
+
   })
-  
+
   output$employees <- renderText(
     total_fte()
   )
-  
+
   bottom_step <- reactive({ #calculate total fte
     req(active_scales())
     temp <- active_scales() %>%
@@ -1310,15 +1234,15 @@ server <- function(input, output, session) {
       dplyr::group_by(col_num) %>%
       dplyr::filter(row_num == max(row_num)) %>%
       dplyr::ungroup()
-    
+
     sum(temp$fte)
   })
-  
+
   
   output$last_step <- renderText(
     paste0(round((bottom_step()/total_fte())*100, 1),'%')
   )
-  
+
   # Notifies the user that save succesful (not real) and directs
   observeEvent(input$save,{ 
     shinyMobile::f7Notif(
@@ -1330,25 +1254,39 @@ server <- function(input, output, session) {
       closeButton = T
     )
   })
-  
-  
+
   observeEvent(input$save, {
-    new_table <- active_scales() %>% 
+    table <- active_scales() %>% 
       data.frame()
+    values <- glue::glue('("{col1}", "{col2}", "{col3}", "{col4}", "{col5}")',
+                         col1 = table[1, 1],
+                         col2 = table[1, 2],
+                         col3 = table[1, 3],
+                         col4 = table[1, 4],
+                         col5 = table[1, 5])
     
+    #Append all value lists to a query
+    for(i in 2:nrow(active_scales())){
+      values <- glue::glue(values,
+                           ', ("{col1}", "{col2}", "{col3}", "{col4}", "{col5}")',
+                           col1 = table[i, 1],
+                           col2 = table[i, 2],
+                           col3 = table[i, 3],
+                           col4 = table[i, 4],
+                           col5 = table[i, 5]
+      )
+    }
     
-    query <- glue::glue(
-      "DELETE FROM salary.user_scales
-      WHERE [user] = '{active}';",
-      active = active_user())
-    
-    
-    sqlQuery(query)
-    
-    sqlAppend(data = new_table, DBI::SQL('"salary"."user_scales"'))
-    
+    query <- glue::glue("DELETE FROM user_scales where user = '{active}';",
+                        active = active_user())
+    sqlQuery(query, 'salary')
+
+    query <- glue::glue('INSERT INTO user_scales VALUES', values, ';')
+    sqlQuery(query, 'salary')
   })
   
+
+
   # 
   observeEvent(input$save,{ # Notifies the user that save succesful (not real) and directs
     shinyMobile::f7Notif(
@@ -1360,10 +1298,10 @@ server <- function(input, output, session) {
       closeButton = T
     )
   })
-  
-  
+
+
   # Results Tab --------------------------------------------------------------
-  
+
   # Get progresed FTE scales
   year_1 <- reactive({ 
     req(active_scales())
@@ -1383,43 +1321,43 @@ server <- function(input, output, session) {
   stipends <- reactive({
     (input$stipends/100)
   })
-  
+
   lane_change <- reactive({
     (input$lane_change/100)
   })
-  
+
   cola_a1 <- reactive({
     1+(input$cola1_a/100)
   })
-  
+
   cola_a2 <- reactive({
     1+(input$cola2_a/100)
   })
-  
+
   cola_a3 <- reactive({
     1+(input$cola3_a/100)
   })
-  
+
   cola_b1 <- reactive({
     1+(input$cola1_b/100)
   })
-  
+
   cola_b2 <- reactive({
     1+(input$cola2_b/100)
   })
-  
+
   cola_b3 <- reactive({
     1+(input$cola3_b/100)
   })
-  
+
   cola_c1 <- reactive({
     1+(input$cola1_c/100)
   })
-  
+
   cola_c2 <- reactive({
     1+(input$cola2_c/100)
   })
-  
+
   cola_c3 <- reactive({
     1+(input$cola3_c/100)
   })
@@ -1464,7 +1402,7 @@ server <- function(input, output, session) {
   year_3_total_a <- reactive({
     get_total_salary(scales_a_year3())
   })
-  
+
   scales_b_year1 <- reactive({
     year_increase(year_1(), cola_b1(), stipends(), lane_change()) 
   })
@@ -1526,9 +1464,9 @@ server <- function(input, output, session) {
                year_3_total_c())
     )
   })
-  
+
   # #Render plot with plotly
-  
+
   output$budget_plot <- plotly::renderPlotly({
     plotly::plot_ly(
       plot_data(),
@@ -1576,9 +1514,9 @@ server <- function(input, output, session) {
         borderwidth=1
       )
   })
-  
+
   # #creating various tables for download (csv and png with {gt})
-  
+
   detail_table <- reactive({
     tibble::tibble(
       option= c('Option A', 'Option B', 'Option C'),
@@ -1629,12 +1567,12 @@ server <- function(input, output, session) {
       )
     )
   })
-  
+
   table_data <- reactive({
     tibble::tibble(
-      
+
       option = c('Option A', 'Option B', 'Option C'),
-      
+
       total_salaries = c(
         round(year_3_total_a()),
         round(year_3_total_b()),
@@ -1653,7 +1591,7 @@ server <- function(input, output, session) {
     )
   })
   
-  
+
   cola_increase_a <- reactive({
     year_3_total_a() - # Final Total Amount
       round(sum(scales_a_year3()$fte*active_scales()$salary, na.rm = T) + # Effect from FTE
@@ -1694,7 +1632,7 @@ server <- function(input, output, session) {
         round(cola_increase_a()),
         round(cola_increase_b()),
         round(cola_increase_c())
-        
+
       ),
       increase_from_cola = c(
         round(100*cola_increase_a()/(year_3_total_a() - payroll_raw()),2),
@@ -1709,74 +1647,74 @@ server <- function(input, output, session) {
       ),
       increase_from_steps = c(
         round(100*(sum(scales_a_year3()$fte*active_scales()$salary, na.rm = T) - payroll_raw())/
-                (year_3_total_a() - payroll_raw()),2),
+          (year_3_total_a() - payroll_raw()),2),
         round(100*(sum(scales_b_year3()$fte*active_scales()$salary, na.rm = T) - payroll_raw())/
-                (year_3_total_b() - payroll_raw()),2),
+          (year_3_total_b() - payroll_raw()),2),
         round(100*(sum(scales_c_year3()$fte*active_scales()$salary, na.rm = T) - payroll_raw())/
-                (year_3_total_c() - payroll_raw()),2)
+          (year_3_total_c() - payroll_raw()),2)
         
       ),
       other_total = c(
         (year_1_total_a()- 
-           sum(scales_a_year1()$fte*active_scales()$salary*cola_a1(), na.rm = T) + 
-           year_2_total_a()- sum(scales_a_year2()$fte*scales_a_year1()$salary*cola_a2(), na.rm = T) + 
-           year_3_total_a()- sum(scales_a_year3()$fte*scales_a_year2()$salary*cola_a3(), na.rm = T) )%>% 
+          sum(scales_a_year1()$fte*active_scales()$salary*cola_a1(), na.rm = T) + 
+          year_2_total_a()- sum(scales_a_year2()$fte*scales_a_year1()$salary*cola_a2(), na.rm = T) + 
+          year_3_total_a()- sum(scales_a_year3()$fte*scales_a_year2()$salary*cola_a3(), na.rm = T) )%>% 
           round(),
         (year_1_total_b()- 
-           sum(scales_b_year1()$fte*active_scales()$salary*cola_b1(), na.rm = T) + 
-           year_2_total_b()- sum(scales_b_year2()$fte*scales_b_year1()$salary*cola_b2(), na.rm = T) + 
-           year_3_total_b()- sum(scales_b_year3()$fte*scales_b_year2()$salary*cola_b3(), na.rm = T) )%>% 
+          sum(scales_b_year1()$fte*active_scales()$salary*cola_b1(), na.rm = T) + 
+          year_2_total_b()- sum(scales_b_year2()$fte*scales_b_year1()$salary*cola_b2(), na.rm = T) + 
+          year_3_total_b()- sum(scales_b_year3()$fte*scales_b_year2()$salary*cola_b3(), na.rm = T) )%>% 
           round(),
         (year_1_total_c()- 
-           sum(scales_c_year1()$fte*active_scales()$salary*cola_c1(), na.rm = T) + 
-           year_2_total_c()- sum(scales_c_year2()$fte*scales_c_year1()$salary*cola_c2(), na.rm = T) + 
-           year_3_total_c()- sum(scales_c_year3()$fte*scales_c_year2()$salary*cola_c3(), na.rm = T) )%>% 
+          sum(scales_c_year1()$fte*active_scales()$salary*cola_c1(), na.rm = T) + 
+          year_2_total_c()- sum(scales_c_year2()$fte*scales_c_year1()$salary*cola_c2(), na.rm = T) + 
+          year_3_total_c()- sum(scales_c_year3()$fte*scales_c_year2()$salary*cola_c3(), na.rm = T) )%>% 
           round()
         
       ),
       others = c(
         (100*(year_1_total_a()- 
-                sum(scales_a_year1()$fte*active_scales()$salary*cola_a1(), na.rm = T) + 
-                year_2_total_a()- sum(scales_a_year2()$fte*scales_a_year1()$salary*cola_a2(), na.rm = T) + 
-                year_3_total_a()- sum(scales_a_year3()$fte*scales_a_year2()$salary*cola_a3(), na.rm = T))/
-           (year_3_total_a() - payroll_raw()) )%>% 
+          sum(scales_a_year1()$fte*active_scales()$salary*cola_a1(), na.rm = T) + 
+          year_2_total_a()- sum(scales_a_year2()$fte*scales_a_year1()$salary*cola_a2(), na.rm = T) + 
+          year_3_total_a()- sum(scales_a_year3()$fte*scales_a_year2()$salary*cola_a3(), na.rm = T))/
+          (year_3_total_a() - payroll_raw()) )%>% 
           round(2),
         (100*(year_1_total_b()- 
-                sum(scales_b_year1()$fte*active_scales()$salary*cola_b1(), na.rm = T) + 
-                year_2_total_b()- sum(scales_b_year2()$fte*scales_b_year1()$salary*cola_b2(), na.rm = T) + 
-                year_3_total_b()- sum(scales_b_year3()$fte*scales_b_year2()$salary*cola_b3(), na.rm = T))/
-           (year_3_total_b() - payroll_raw())) %>% 
+          sum(scales_b_year1()$fte*active_scales()$salary*cola_b1(), na.rm = T) + 
+          year_2_total_b()- sum(scales_b_year2()$fte*scales_b_year1()$salary*cola_b2(), na.rm = T) + 
+          year_3_total_b()- sum(scales_b_year3()$fte*scales_b_year2()$salary*cola_b3(), na.rm = T))/
+          (year_3_total_b() - payroll_raw())) %>% 
           round(2),
         (100*(year_1_total_c()- 
-                sum(scales_c_year1()$fte*active_scales()$salary*cola_c1(), na.rm = T) + 
-                year_2_total_c()- sum(scales_c_year2()$fte*scales_c_year1()$salary*cola_c2(), na.rm = T) + 
-                year_3_total_c()- sum(scales_c_year3()$fte*scales_c_year2()$salary*cola_c3(), na.rm = T))/
-           (year_3_total_c() - payroll_raw())) %>% 
+          sum(scales_c_year1()$fte*active_scales()$salary*cola_c1(), na.rm = T) + 
+          year_2_total_c()- sum(scales_c_year2()$fte*scales_c_year1()$salary*cola_c2(), na.rm = T) + 
+          year_3_total_c()- sum(scales_c_year3()$fte*scales_c_year2()$salary*cola_c3(), na.rm = T))/
+          (year_3_total_c() - payroll_raw())) %>% 
           round()
+        )
       )
-    )
-  })
-  
-  
+    })
+
+
   years_table_a <- reactive({
-    dplyr::bind_cols('Cola 1' = input$cola1_a,
-                     reshape2::acast(scales_a_year1(), row_num ~ col_num, function(x) {sort(as.character(x))[1]},
-                                     value.var = 'salary', fill = '0') %>% 
-                       tibble::as_tibble() %>% 
-                       dplyr::rename_with(function(x)paste('Year 1 - Lane', x)),
-                     'Cola 2' = input$cola2_a,
-                     reshape2::acast(scales_a_year2(), row_num ~ col_num, function(x) {sort(as.character(x))[1]},
-                                     value.var = 'salary', fill = '0') %>% 
-                       tibble::as_tibble() %>% 
-                       dplyr::rename_with(function(x)paste('Year 2 - Lane', x)),
-                     'Cola 3' = input$cola3_a,
-                     reshape2::acast(scales_a_year3(), row_num ~ col_num, function(x) {sort(as.character(x))[1]},
-                                     value.var = 'salary', fill = '0') %>% 
-                       tibble::as_tibble() %>% 
-                       dplyr::rename_with(function(x)paste('Year 3 - Lane', x))
-    ) %>% 
+      dplyr::bind_cols('Cola 1' = input$cola1_a,
+                       reshape2::acast(scales_a_year1(), row_num ~ col_num, function(x) {sort(as.character(x))[1]},
+                                       value.var = 'salary', fill = '0') %>% 
+                         tibble::as_tibble() %>% 
+                         dplyr::rename_with(function(x)paste('Year 1 - Lane', x)),
+                       'Cola 2' = input$cola2_a,
+                       reshape2::acast(scales_a_year2(), row_num ~ col_num, function(x) {sort(as.character(x))[1]},
+                                       value.var = 'salary', fill = '0') %>% 
+                         tibble::as_tibble() %>% 
+                         dplyr::rename_with(function(x)paste('Year 2 - Lane', x)),
+                       'Cola 3' = input$cola3_a,
+                       reshape2::acast(scales_a_year3(), row_num ~ col_num, function(x) {sort(as.character(x))[1]},
+                                       value.var = 'salary', fill = '0') %>% 
+                         tibble::as_tibble() %>% 
+                         dplyr::rename_with(function(x)paste('Year 3 - Lane', x))
+      ) %>% 
       dplyr::mutate(dplyr::across(dplyr::starts_with('Year'), function(x){round(as.numeric(x))}))
-    
+
   })
   
   years_table_b <- reactive({
@@ -1820,10 +1758,10 @@ server <- function(input, output, session) {
       dplyr::mutate(dplyr::across(dplyr::starts_with('Year'), function(x){round(as.numeric(x))}))
     
   })
-  
-  
+
+
   #download handlers for all csv and png downloads
-  
+
   output$down_summ = downloadHandler(
     filename = function() {
       paste("Salary Summary ", Sys.Date(), ".csv", sep="")
@@ -1832,7 +1770,7 @@ server <- function(input, output, session) {
       write.csv(table_data(), file, row.names = F)
     }
   )
-  
+
   output$down_det = downloadHandler(
     filename = function() {
       paste("Salary Details ", Sys.Date(), ".csv", sep="")
@@ -1841,7 +1779,7 @@ server <- function(input, output, session) {
       write.csv(detail_table(), file, row.names = F)
     }
   )
-  
+
   output$down_break = downloadHandler(
     filename = function() {
       paste("Salary Breakdown ", Sys.Date(), ".csv", sep="")
@@ -1850,7 +1788,7 @@ server <- function(input, output, session) {
       write.csv(breakdown_table(), file, row.names = F)
     }
   )
-  
+
   output$down_years_a = downloadHandler(
     filename = function() {
       paste("Salary Scales (A) ", Sys.Date(), ".csv", sep="")
@@ -1859,7 +1797,7 @@ server <- function(input, output, session) {
       write.csv(years_table_a(), file, row.names = F)
     }
   )
-  
+
   output$down_years_b = downloadHandler(
     filename = function() {
       paste("Salary Scales (B) ", Sys.Date(), ".csv", sep="")
@@ -1868,7 +1806,7 @@ server <- function(input, output, session) {
       write.csv(years_table_b(), file, row.names = F)
     }
   )
-  
+
   output$down_years_c = downloadHandler(
     filename = function() {
       paste("Salary Scales (C) ", Sys.Date(), ".csv", sep="")
@@ -1877,9 +1815,9 @@ server <- function(input, output, session) {
       write.csv(years_table_c(), file, row.names = F)
     }
   )
-  
+
   # #displayed gt tables
-  
+
   summary_tab <- reactive({
     table_data() %>%
       gt::gt() %>%
@@ -1943,7 +1881,7 @@ server <- function(input, output, session) {
         locations = gt::cells_title("subtitle")
       )
   })
-  
+
   details_tab <- reactive({
     detail_table() %>%
       gt::gt() %>%
@@ -2025,7 +1963,7 @@ server <- function(input, output, session) {
       gt::cols_align(align = c("center"),
                      columns = c(option:perc_increase_3))
   })
-  
+
   breakdown_tab <- reactive({
     breakdown_table() %>%
       gt::gt() %>%
@@ -2085,21 +2023,21 @@ server <- function(input, output, session) {
         locations = gt::cells_title("subtitle")
       )
   })
-  
+
   output$sum_table <- gt::render_gt({
     summary_tab()
   })
-  
+
   output$det_table <- gt::render_gt({
     details_tab()
   })
-  
+
   output$break_table <- gt::render_gt({
     breakdown_tab()
   })
-  
+
   #Conditional UI that switches between plot and tables
-  
+
   output$table_plot <- renderUI({
     if(input$toggle %% 2 == 0){
       tags$div(
@@ -2135,24 +2073,24 @@ server <- function(input, output, session) {
     } else{
     }
   })
-  
-  
+
+
   observeEvent(input$down_chart, { #take "screenshot" of plot selector
     shinyscreenshot::screenshot(selector = '#budget_plot' , filename = 'Salary Chart.png', scale = 3)
   })
-  
+
   observeEvent(input$down_summ_img, { #take "screenshot" of table selector
     shinyscreenshot::screenshot(selector = '#sum_table' , filename = 'Summary Table', scale = 3)
   })
-  
+
   observeEvent(input$down_det_img, {
     shinyscreenshot::screenshot(selector = '#det_table' , filename = 'Details Table', scale = 3)
   })
-  
+
   observeEvent(input$down_break_img, {
     shinyscreenshot::screenshot(selector = '#break_table' , filename = 'Breakdown Table', scale = 3)
   })
-  
+
   # Results 5 ---------------------------------------------------------------
   
   # Get progresed FTE scales
@@ -2364,7 +2302,7 @@ server <- function(input, output, session) {
   })
   
   
-  
+
   plot_data5 <- reactive({
     tibble::tibble(
       op_a = c(
@@ -2390,11 +2328,11 @@ server <- function(input, output, session) {
       )
     )
   })
-  
-  
-  
+
+
+
   #Render plot with plotly
-  
+
   output$budget_plot5 <- plotly::renderPlotly({
     plotly::plot_ly(
       plot_data5(),
@@ -2560,7 +2498,7 @@ server <- function(input, output, session) {
               get_total_salary(scales_a_year4_5()) - sum(scales_a_year4_5()$fte*scales_a_year3_5()$salary*cola_a4_5(), na.rm = T) + 
               # Effect Stipends on 5
               get_total_salary(scales_a_year5_5()) - sum(scales_a_year5_5()$fte*scales_a_year4_5()$salary*cola_a5_5(), na.rm = T)
-      )  
+            )  
   })
   
   cola_increase_b5 <- reactive({
@@ -2682,7 +2620,7 @@ server <- function(input, output, session) {
       )
     )
   })
-  
+
   years_table_a5 <- reactive({
     dplyr::bind_cols('Cola 1' = input$cola1_a5,
                      reshape2::acast(scales_a_year1_5(), row_num ~ col_num, function(x) {sort(as.character(x))[1]},
@@ -2776,10 +2714,10 @@ server <- function(input, output, session) {
     
   })
   
-  
+
   
   #download handlers for all csv and png downloads
-  
+
   output$down_summ5 = downloadHandler(
     filename = function() {
       paste("Salary Summary (5-year)", Sys.Date(), ".csv", sep="")
@@ -2788,7 +2726,7 @@ server <- function(input, output, session) {
       write.csv(table_data5(), file, row.names = F)
     }
   )
-  
+
   output$down_det5 = downloadHandler(
     filename = function() {
       paste("Salary Details (5-Year)", Sys.Date(), ".csv", sep="")
@@ -2797,7 +2735,7 @@ server <- function(input, output, session) {
       write.csv(detail_table5(), file, row.names = F)
     }
   )
-  
+
   output$down_break5 = downloadHandler(
     filename = function() {
       paste("Salary Breakdown (5-Year) ", Sys.Date(), ".csv", sep="")
@@ -2806,7 +2744,7 @@ server <- function(input, output, session) {
       write.csv(breakdown_table(), file, row.names = F)
     }
   )
-  
+
   output$down_years_a5 = downloadHandler(
     filename = function() {
       paste("Salary Scales (A-5) ", Sys.Date(), ".csv", sep="")
@@ -2815,7 +2753,7 @@ server <- function(input, output, session) {
       write.csv(years_table_a5(), file, row.names = F)
     }
   )
-  
+
   output$down_years_b5 = downloadHandler(
     filename = function() {
       paste("Salary Scales (B-5) ", Sys.Date(), ".csv", sep="")
@@ -2824,7 +2762,7 @@ server <- function(input, output, session) {
       write.csv(years_table_b5(), file, row.names = F)
     }
   )
-  
+
   output$down_years_c5 = downloadHandler(
     filename = function() {
       paste("Salary Scales (C-5) ", Sys.Date(), ".csv", sep="")
@@ -2833,11 +2771,11 @@ server <- function(input, output, session) {
       write.csv(years_table_c5(), file, row.names = F)
     }
   )
-  
-  
+
+
   #displayed gt tables
-  
-  
+
+
   summary_tab5 <- reactive({
     table_data5() %>%
       gt::gt() %>%
@@ -2901,7 +2839,7 @@ server <- function(input, output, session) {
         locations = gt::cells_title("subtitle")
       )
   })
-  
+
   details_tab5 <- reactive({
     detail_table5() %>%
       gt::gt() %>%
@@ -3023,8 +2961,8 @@ server <- function(input, output, session) {
         color = '#d8d4d4'
       )
   })
-  
-  
+
+
   breakdown_tab5 <- reactive({
     breakdown_table5() %>%
       gt::gt() %>%
@@ -3084,23 +3022,23 @@ server <- function(input, output, session) {
         style = gt::cell_text(align = "left"),
         locations = gt::cells_title("subtitle")
       )
-    
+
   })
-  
+
   output$sum_table5 <- gt::render_gt({
     summary_tab5()
   })
-  
+
   output$det_table5 <- gt::render_gt({
     details_tab5()
   })
-  
+
   output$break_table5 <- gt::render_gt({
     breakdown_tab5()
   })
-  
+
   #Conditional UI that switches between plot and tables
-  
+
   output$table_plot5 <- renderUI({
     if(input$toggle5 %% 2 == 0){
       tags$div(
@@ -3136,55 +3074,55 @@ server <- function(input, output, session) {
     } else{
     }
   })
-  
-  
+
+
   observeEvent(input$down_chart5, { #take "screenshot" of plot selector
     shinyscreenshot::screenshot(selector = '#budget_plot5' , filename = 'Salary Chart (5 Years) ', scale = 4)
   })
-  
+
   observeEvent(input$down_summ_img5, { #take "screenshot" of table selector
     shinyscreenshot::screenshot(selector = '#sum_table5' , filename = 'Summary Table', scale = 4)
   })
-  
+
   observeEvent(input$down_det_img5, {
     shinyscreenshot::screenshot(selector = '#det_table5' , filename = 'Details Table', scale = 4)
   })
-  
+
   observeEvent(input$down_break_img5, {
     shinyscreenshot::screenshot(selector = '#break_table5' , filename = 'Breakdown Table', scale = 4)
   })
-  
+
   
   # Heatmap Tab --------------------------------------------------------------
-  
+
   heatmap_data1 <- reactive({ 
     temp <- reshape2::acast(active_scales() %>% dplyr::filter(salary != 0), row_num ~ col_num, function(x) {sort(as.character(x))[1]},
-                            value.var = 'fte', fill = 'NA') %>% 
+                    value.var = 'fte', fill = 'NA') %>% 
       tibble::as_tibble() %>% 
       dplyr::mutate(dplyr::across(.cols = dplyr::everything(), function(x)as.numeric(x)))
     temp/total_fte()*100
   })
-  
-  
+
+
   heatmap_data2 <- reactive({
     temp <- reshape2::acast(scales_a_year1(), row_num ~ col_num, function(x) {sort(as.character(x))[1]},
-                            value.var = 'fte', fill = '0') %>% 
+                           value.var = 'fte', fill = '0') %>% 
       tibble::as_tibble() %>% 
       dplyr::mutate(dplyr::across(.cols = dplyr::everything(), function(x)as.numeric(x)))
     temp/total_fte()*100
   })
-  
+
   heatmap_data3 <- reactive({
     temp <- reshape2::acast(scales_a_year2(), row_num ~ col_num, function(x) {sort(as.character(x))[1]},
-                            value.var = 'fte', fill = '0') %>% 
+                           value.var = 'fte', fill = '0') %>% 
       tibble::as_tibble() %>% 
       dplyr::mutate(dplyr::across(.cols = dplyr::everything(), function(x)as.numeric(x)))
     temp/total_fte()*100
   })
-  
+
   heatmap_data4 <- reactive({
     temp <- reshape2::acast(scales_a_year3(), row_num ~ col_num, function(x) {sort(as.character(x))[1]},
-                            value.var = 'fte', fill = '0') %>% 
+                           value.var = 'fte', fill = '0') %>% 
       tibble::as_tibble() %>% 
       dplyr::mutate(dplyr::across(.cols = dplyr::everything(), function(x)as.numeric(x)))
     temp/total_fte()*100
@@ -3220,9 +3158,9 @@ server <- function(input, output, session) {
     paste0(round((sum(temp$fte)/total_fte())*100, 1),'%')
   })
   
-  
+
   #Standard plotly heatmaps with percentage data
-  
+
   output$heatmap1 <- plotly::renderPlotly(
     plotly::plot_ly(
       x = purrr::map_chr(seq(ncol(heatmap_data1())), function(x){paste('Lane', x)}), #cleaner name
@@ -3256,8 +3194,8 @@ server <- function(input, output, session) {
         borderwidth = 1
       )
   ) 
-  
-  
+
+
   output$heatmap2 <- plotly::renderPlotly(
     plotly::plot_ly(
       x = purrr::map_chr(seq(ncol(heatmap_data2())), function(x){paste('Lane', x)}),
@@ -3291,7 +3229,7 @@ server <- function(input, output, session) {
         borderwidth = 1
       )
   )
-  
+
   output$heatmap3 <- plotly::renderPlotly(
     plotly::plot_ly(
       x = purrr::map_chr(seq(ncol(heatmap_data2())), function(x){paste('Lane', x)}),
@@ -3325,7 +3263,7 @@ server <- function(input, output, session) {
         borderwidth = 1
       )
   )
-  
+
   output$heatmap4 <- plotly::renderPlotly(
     plotly::plot_ly(
       x = purrr::map_chr(seq(ncol(heatmap_data2())), function(x){paste('Lane', x)}),
@@ -3359,12 +3297,12 @@ server <- function(input, output, session) {
         borderwidth = 1
       )
   )
-  
+
   observeEvent(input$down_heatmap, { #Screenshot the all_heatmaps selector to get a PNG
     shinyscreenshot::screenshot(selector = '#all_heatmaps' , filename = 'Heatmaps', scale = 4)
   })
-  
-  
+
+
   
 }
 
