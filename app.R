@@ -4,22 +4,27 @@
 
 library(magrittr)
 library(shiny)
+options(encoding = "UTF-8", shiny.sanitize.errors = TRUE)
 
-options(encoding = "UTF-8")
 
-sqlServer <- "litix.database.windows.net"  #Enter Azure SQL Server
-sqlDatabase <- "LITIX"                
-sqlUser <- "litix"            
-sqlPassword <- "ArxEd2024!m*u=XD39hJ"   
+warehouse <- config::get('dataconnection')
 
-is_local = Sys.getenv('SHINY_PORT') == ""
-if(is_local){
-  con_string <- "Driver=ODBC Driver 18 for SQL Server;Server=litix.database.windows.net;Database=LITIX;Uid=litix;Pwd=ArxEd2024!m*u=XD39hJ;Encrypt=yes;TrustServerCertificate=no;"
-    
-} else{
-  con_string <-  "Driver=SQLServer;Server=litix.database.windows.net;Database=LITIX;Uid=litix;Pwd=ArxEd2024!m*u=XD39hJ;Encrypt=yes;TrustServerCertificate=no;"
 
-}
+con_string <- glue::glue(
+  "Driver={driver};
+  Server={server};
+  Database={db};
+  Uid={user};
+  Pwd={pass};
+  Encrypt=yes;
+  TrustServerCertificate=no;",
+  driver = warehouse$driver,
+  server = warehouse$server,
+  db = warehouse$database,
+  user = warehouse$uid,
+  pass = warehouse$pwd
+)
+
 
         
 
@@ -1133,22 +1138,28 @@ server <- function(input, output, session) {
   #get associated district logo and name
   
   logo <- reactive({ #access district table to get name and logo associated with user
-    query <- glue::glue_sql("SELECT logo 
-      FROM district.district_info 
+    query <- glue::glue(
+      "SELECT logo
+      FROM district.district_info
       WHERE nces_id = (SELECT nces_id
       FROM district.user_district
-      WHERE [user] =", "'",  active_user(), "');") 
+      WHERE [user] = '{user}');",
+      user = active_user()
+    )
     
     sqlQuery(query)
   })
   
   district_name <- reactive({
     
-    query <- glue::glue_sql("SELECT name 
-      FROM district.district_info 
+    query <- glue::glue_sql(
+      "SELECT name
+      FROM district.district_info
       WHERE nces_id = (SELECT nces_id
       FROM district.user_district
-      WHERE [user] =", "'",  active_user(), "');") 
+      WHERE [user] ='{user}');",
+      user = active_user()
+    ) 
     
     sqlQuery(query) %>% 
       unique()
@@ -1211,11 +1222,11 @@ server <- function(input, output, session) {
   
   test_server <- reactive({
     req(active_user())
-    query <- glue::glue("
-      SELECT * 
-      FROM salary.user_scales 
-      WHERE [user] = '{active}';",
-                        active = active_user())
+    query <- glue::glue(
+      "SELECT *
+      FROM salary.user_scales
+      WHERE [user] = '{active}';", 
+      active = active_user())
     
     dim(sqlQuery(query))
   })
@@ -1326,9 +1337,10 @@ server <- function(input, output, session) {
       data.frame()
     
     
-    query <- glue::glue("DELETE FROM salary.user_scales 
-                        where [user] = '{active}';",
-                        active = active_user())
+    query <- glue::glue(
+      "DELETE FROM salary.user_scales
+      WHERE [user] = '{active}';",
+      active = active_user())
     
     
     sqlQuery(query)
